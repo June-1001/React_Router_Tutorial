@@ -25,7 +25,7 @@ export default function EditContact() {
       }
     }
 
-    if (allEmpty) {
+    if (!contact.saved && allEmpty) {
       // 모든 데이터가 비어있으면 데이터 제거
       await deleteContact(contact.id);
       // 연락처 리스트 다시 불러오기
@@ -75,7 +75,14 @@ export default function EditContact() {
         <textarea name="notes" defaultValue={contact?.notes} rows={6} />
       </label>
       <p>
-        <button type="submit">Save</button>
+        <button
+          type="submit"
+          onClick={() => {
+            setSaved();
+          }}
+        >
+          Save
+        </button>
         <button
           type="button"
           onClick={() => {

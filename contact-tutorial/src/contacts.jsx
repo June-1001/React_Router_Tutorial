@@ -15,7 +15,7 @@ export async function getContacts(query) {
 export async function createContact() {
   await fakeNetwork();
   let id = Math.random().toString(36).substring(2, 9);
-  let contact = { id, createdAt: Date.now() };
+  let contact = { id, createdAt: Date.now(), saved: false };
   let contacts = await getContacts();
   contacts.unshift(contact);
   await set(contacts);
@@ -35,6 +35,7 @@ export async function updateContact(id, updates) {
   let contact = contacts.find((contact) => contact.id === id);
   if (!contact) throw new Error("No contact found for", id);
   Object.assign(contact, updates);
+  contact.saved = true;
   await set(contacts);
   return contact;
 }
