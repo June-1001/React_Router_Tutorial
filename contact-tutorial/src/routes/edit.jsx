@@ -1,10 +1,8 @@
-import { Form, useLoaderData, redirect, useNavigate } from "react-router-dom";
-import { updateContact } from "../contacts";
+import { Form, useLoaderData, redirect, useNavigate, useRevalidator } from "react-router-dom";
+import { updateContact, deleteContact } from "../contacts";
 
 export async function action({ request, params }) {
   const formData = await request.formData();
-  const firstName = formData.get("first");
-  const lastName = formData.get("last");
   const updates = Object.fromEntries(formData);
   await updateContact(params.contactId, updates);
   return redirect(`/contacts/${params.contactId}`);
@@ -13,6 +11,31 @@ export async function action({ request, params }) {
 export default function EditContact() {
   const { contact } = useLoaderData();
   const navigate = useNavigate();
+  const revalidator = useRevalidator();
+
+  const handleCancel = async () => {
+    const form = document.getElementById("contact-form");
+    const formData = new FormData(form);
+    let allEmpty = true;
+
+    for (const value of formData.values()) {
+      if (value.trim() !== "") {
+        allEmpty = false;
+        break;
+      }
+    }
+
+    if (allEmpty) {
+      // 모든 데이터가 비어있으면 데이터 제거
+      await deleteContact(contact.id);
+      // 연락처 리스트 다시 불러오기
+      revalidator.revalidate();
+      navigate("/");
+      return;
+    }
+
+    navigate(-1);
+  };
 
   return (
     <Form method="post" id="contact-form">
@@ -56,7 +79,7 @@ export default function EditContact() {
         <button
           type="button"
           onClick={() => {
-            navigate(-1);
+            handleCancel();
           }}
         >
           Cancel
