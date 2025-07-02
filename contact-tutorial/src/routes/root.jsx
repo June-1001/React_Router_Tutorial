@@ -9,7 +9,7 @@ import {
   useSubmit,
 } from "react-router-dom";
 import { getContacts, createContact } from "../contacts";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export async function action() {
   const contact = await createContact();
@@ -18,7 +18,7 @@ export async function action() {
 
 export async function loader({ request }) {
   const url = new URL(request.url);
-  const q = url.searchParams.get("q");
+  const q = url.searchParams.get("q") || ""; // 항상 string
   const contacts = await getContacts(q);
   return { contacts, q };
 }
@@ -28,8 +28,9 @@ export default function Root() {
   const navigation = useNavigation();
   const submit = useSubmit();
 
+  const [searchText, setSearchText] = useState(q); //리액트로 state 설정
   useEffect(() => {
-    document.getElementById("q").value = q;
+    setSearchText(q);
   }, [q]);
 
   return (
@@ -45,8 +46,9 @@ export default function Root() {
               placeholder="Search"
               type="search"
               name="q"
-              defaultValue={q}
+              value={searchText}
               onChange={(event) => {
+                setSearchText(event.target.value);
                 submit(event.currentTarget.form);
               }}
             />
@@ -63,7 +65,7 @@ export default function Root() {
               {contacts.map((contact) => (
                 <li key={contact.id}>
                   <NavLink
-                    to={`contacts/${contact.id}`}
+                    to={`contacts/${contact.id}?q=${encodeURIComponent(q)}`} //검색어 유지
                     className={({ isActive, isPending }) =>
                       isActive ? "active" : isPending ? "pending" : ""
                     }
