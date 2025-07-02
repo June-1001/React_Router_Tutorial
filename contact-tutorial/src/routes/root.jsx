@@ -23,6 +23,8 @@ export async function loader({ request }) {
   return { contacts, q };
 }
 
+const searching = navigation.location && new URLSearchParams(navigation.location.search).has("q");
+
 export default function Root() {
   const { contacts, q } = useLoaderData();
   const navigation = useNavigation();
@@ -42,17 +44,20 @@ export default function Root() {
           <Form id="search-form" role="search">
             <input
               id="q"
+              className={searching ? "loading" : ""}
               aria-label="Search contacts"
               placeholder="Search"
               type="search"
               name="q"
-              value={searchText}
+              value={searchText} // default value에서 항상 검색어 사용으로 변경
               onChange={(event) => {
-                setSearchText(event.target.value);
-                submit(event.currentTarget.form);
+                const isFirstSearch = q == null;
+                submit(event.currentTarget.form, {
+                  replace: !isFirstSearch,
+                });
               }}
             />
-            <div id="search-spinner" aria-hidden hidden={true} />
+            <div id="search-spinner" aria-hidden hidden={!searching} />
             <div className="sr-only" aria-live="polite"></div>
           </Form>
           <Form method="post">
